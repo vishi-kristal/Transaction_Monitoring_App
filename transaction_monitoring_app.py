@@ -46,7 +46,7 @@ def build_master_df(client_list_file, user_aml_rating_file, fund_deposits_file, 
     fund_withdrawals = pd.read_excel(fund_withdrawals_file)
     client_info_report = pd.read_excel(client_info_file)
     exceptional_approval = pd.read_excel(exceptional_approval_file, sheet_name="KASG ", header=1)
-    user_account_nav = pd.read_excel(user_account_nav_file)
+    user_account_nav = pd.read_excel(user_account_nav_file, sheet_name="International")
 
     master_df = (
         client_list
