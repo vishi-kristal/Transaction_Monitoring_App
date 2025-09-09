@@ -66,17 +66,23 @@ def build_master_df(client_list_file, user_aml_rating_file, fund_deposits_file, 
         else:
             sgd_to_usd = 1 / usd_to_sgd
 
+        usd_to_inr = fx_rates.get('INR', 83)
+        if usd_to_inr == 0:
+            inr_to_usd = 0.012
+        else:
+            inr_to_usd = 1 / usd_to_inr
+
         mapping = {
             'LESS_THAN_0_5M': 250000 * sgd_to_usd,
             'BETWEEN_0_5M_TO_1M': 750000 * sgd_to_usd,
             'BETWEEN_1M_TO_2M': 1000000 * sgd_to_usd,
             'BETWEEN_2M_TO_5M': 2500000 * sgd_to_usd,
             'MORE_THAN_5M': 7500000 * sgd_to_usd,
-            'LESS_THAN_10LAKHS': 8000 * sgd_to_usd,
-            'BETWEEN_10LAKHS_TO_25LAKHS': 20000 * sgd_to_usd,
-            'BETWEEN_25LAKHS_TO_50LAKHS': 60000 * sgd_to_usd,
-            'BETWEEN_50LAKHS_TO_1CR': 120000 * sgd_to_usd,
-            'MORE_THAN_1CR': 100000 * sgd_to_usd
+            'LESS_THAN_10LAKHS': 500000 * inr_to_usd,
+            'BETWEEN_10LAKHS_TO_25LAKHS': 1750000 * inr_to_usd,
+            'BETWEEN_25LAKHS_TO_50LAKHS': 3750000 * inr_to_usd,
+            'BETWEEN_50LAKHS_TO_1CR': 7500000 * inr_to_usd,
+            'MORE_THAN_1CR': 15000000 * inr_to_usd
         }
         return mapping.get(quantum_of_wealth, np.nan)
 
