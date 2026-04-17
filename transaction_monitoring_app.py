@@ -25,6 +25,10 @@ if not all([client_list_file, user_aml_rating_file, fund_deposits_file, fund_wit
 
 # -------- Load Live Exchange Rates -------- #
 def get_live_fx_rates():
+    """
+    Fetch live FX rates from API. Returns rates as "X per 1 USD".
+    Example: SGD: 1.35 means 1 USD = 1.35 SGD
+    """
     url = "https://v6.exchangerate-api.com/v6/3339befb188f8fae79bb8a27/latest/USD"
     try:
         response = requests.get(url)
@@ -32,7 +36,8 @@ def get_live_fx_rates():
         return data['conversion_rates']
     except Exception as e:
         st.error("Failed to fetch live FX rates. Using fallback rates.")
-        return {'USD': 1.0, 'SGD': 0.77, 'HKD': 0.13, 'CAD': 0.72, 'EUR': 1.12, 'AUD': 0.65, 'GBP': 1.33}
+        # Fallback rates as "X per 1 USD" (same format as API)
+        return {'USD': 1.0, 'SGD': 1.2723, 'HKD': 7.8247, 'CAD': 1.3709, 'EUR': 0.849, 'AUD': 1.3959, 'GBP': 0.7388, 'INR': 93.2456}
 
 @st.cache_data
 def build_master_df(client_list_file, user_aml_rating_file, fund_deposits_file, fund_withdrawals_file,
@@ -60,17 +65,13 @@ def build_master_df(client_list_file, user_aml_rating_file, fund_deposits_file, 
                          'kyc_status', 'assigned_to_entity', 'rating', 'reason', 'quantum_of_wealth', 'bank_location']
 
     def calculate_qow(quantum_of_wealth):
-        usd_to_sgd = fx_rates.get('SGD', 0.77)
-        if usd_to_sgd == 0:
-            sgd_to_usd = 0.77
-        else:
-            sgd_to_usd = 1 / usd_to_sgd
+        # fx_rates are "X per 1 USD" (e.g., SGD: 1.35 means 1 USD = 1.35 SGD)
+        # To convert SGD to USD: divide by rate (or multiply by 1/rate)
+        sgd_per_usd = fx_rates.get('SGD', 1.35)
+        sgd_to_usd = 1 / sgd_per_usd if sgd_per_usd != 0 else 0.74
 
-        usd_to_inr = fx_rates.get('INR', 83)
-        if usd_to_inr == 0:
-            inr_to_usd = 0.012
-        else:
-            inr_to_usd = 1 / usd_to_inr
+        inr_per_usd = fx_rates.get('INR', 83.0)
+        inr_to_usd = 1 / inr_per_usd if inr_per_usd != 0 else 0.012
 
         mapping = {
             'LESS_THAN_0_5M': 250000 * sgd_to_usd,
