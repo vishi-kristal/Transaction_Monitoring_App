@@ -1,6 +1,6 @@
-streamlit
-pandas
-numpy
-matplotlib
-datetime
+streamlit==1.50.0
+pandas==2.3.3
+numpy==2.0.2
+matplotlib==3.9.4
+requests==2.32.5
 openpyxl==3.1.5
