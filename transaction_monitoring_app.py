@@ -129,7 +129,10 @@ def build_master_df(client_list_file, user_aml_rating_file, fund_deposits_file, 
     user_account_nav = user_account_nav.groupby("client_id", as_index=False)["Cash Transferred in USD"].sum()
     master_df = master_df.merge(user_account_nav, on="client_id", how="left")
 
-    master_df.fillna(0, inplace=True)
+    num_cols = master_df.select_dtypes(include='number').columns
+    obj_cols = master_df.columns.difference(num_cols)
+    master_df[num_cols] = master_df[num_cols].fillna(0)
+    master_df[obj_cols] = master_df[obj_cols].fillna('')
     return master_df
 
 # Run pipeline
@@ -154,7 +157,8 @@ def apply_rules(row):
     if isinstance(row.get("asset_transfer_date"), pd.Timestamp) and isinstance(row.get("withdrawal_date"), pd.Timestamp):
         if 0 < (row["withdrawal_date"] - row["asset_transfer_date"]).days <= 180:
             reasons.append("Rule 7")
-    if row.get("bank_location") != 0 and row.get("bank_location") != row.get("country_of_residence"):
+    bank_loc = row.get("bank_location")
+    if bank_loc and bank_loc != 0 and bank_loc != row.get("country_of_residence"):
         reasons.append("Rule 8")
 
     n_rules = len(reasons)
